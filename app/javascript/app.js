@@ -1,5 +1,5 @@
 import {
-  default as contract
+  default as TruffleContract
 } from 'truffle-contract';
 import contract_artifacts from '../../build/contracts/Token.json';
 import {
@@ -7,9 +7,7 @@ import {
 } from 'web3';
 import $ from "jquery";
 
-var Contract = contract(contract_artifacts);
-// var contractInstance = Contract.deployed();
-// const tokenContractAddress = "0xd7787ae4eb81d944821d1296f8e661c3106289dc";
+var Contract = TruffleContract(contract_artifacts);
 
 function setBadge(badge, state) {
   // Sets a badge depending on the boolean `state`
@@ -23,10 +21,8 @@ function setBadge(badge, state) {
     badge.addClass("badge-danger");
   }
 }
-// if (contract)
-setBadge($("#token"), true);
-setBadge($("#owner"), true);
-// contractInstance.then((a) => { console.log(a); });
+// setBadge($("#token"), true);
+// setBadge($("#owner"), true);
 
 window.Interface = {
   start: async function() {
@@ -38,15 +34,21 @@ window.Interface = {
         alert("There was an error fetching your accounts.");
         return;
       } else if (accounts.length == 0) {
-        alert("You have no Ethereum accounts.");
+        alert("You have no Ethereum wallets.");
         return;
       } else {
         currentAccount = window.currentAccount = accounts[0];
+        console.log(currentAccount);
         $("#currentAccount").text(currentAccount)
       }
-      console.log(contractInstance.owner);
 
-    })
+    });
+    var balance = await contractInstance.balances.call(window.currentAccount);
+    setBadge($("#token"), balance);
+    console.log(balance);
+
+    var owner = await contractInstance.owner();
+    setBadge($("#owner"), owner.equals(window.currentAccount));
   }
 }
 
