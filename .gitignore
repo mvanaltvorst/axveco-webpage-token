@@ -3,3 +3,5 @@ node_modules
 coverage
 build
 package-lock.json
+.soliumignore
+.soliumrc.json
