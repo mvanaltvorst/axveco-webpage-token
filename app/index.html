@@ -1,6 +1,7 @@
 <html>
     <head>
         <title>Axveco</title>
+        <!-- TODO: Use webpack instead of bootstrap CDN -->
         <link
         rel="stylesheet"
         href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
@@ -11,13 +12,30 @@
     </head>
     <body>
         <div class="container">
-          <div class="panel panel-default">
-            <div class="panel-heading">Axveco webpage token</div>
-            <ul class="list-group">
-              <li class="list-group-item">Current account: <span id="currentAccount"></span></li>
-              <li class="list-group-item">Owner: <span class="badge badge-danger" id="owner">false</span></li>
-              <li class="list-group-item">Has token: <span class="badge badge-danger" id="token">false</span></li>
-            </ul>
+          <div class="card-deck" style="margin-top: 15px;">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="card-title">Account information</h5>
+              </div>
+              <div class="card-body">
+                  <p class="card-text">Current account: <span id="currentAccount"></span></p>
+                  <p class="card-text">Is owner:  <span class="badge badge-danger" id="owner">false</span></p>
+                  <p class="card-text">Has token: <span class="badge badge-danger" id="token">false</span></p>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h5 class="card-title">Give tokens</h5>
+              </div>
+              <div class="card-body">
+                <label>Address</label>
+                <br>
+                <input type="text" placeholder="0x000..."></input>
+                <br><br>
+                <button type="submit" class="btn btn-secondary">Submit</button>
+              </div>
+            </div>
           </div>
         </div>
     </body>

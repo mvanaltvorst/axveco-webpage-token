@@ -16,4 +16,8 @@ contract TestToken {
         address tokens_owner = token.owner();
         Assert.equal(tokens_owner, expected, "The owner isn't the address we expected.");
     }
+
+    function testNotEveryoneHasToken() public {
+        Assert.equal(token.balances(this), false, "The testing contract has a token, but it shouldn't.");
+    }
 }
