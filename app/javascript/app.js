@@ -23,16 +23,49 @@ function setBadge(badge, state) {
 }
 
 function makeFormInteractable(state) {
-  $("input").prop("disabled", !state);
+  $("textarea").prop("disabled", !state);
+  $("button").prop("disabled", !state);
 }
 
-window.Interface = {
+window.App = {
+  updateHasToken: async function() {
+    $("#currentAccount").text(currentAccount)
+    contractInstance.balances.call(currentAccount).then(res => {
+      setBadge($("#token"), res);
+    });
+  },
+  updateCurrentAccount: async function() {
+    $("#currentAccount").text(currentAccount)
+    App.updateIsOwner();
+    App.updateHasToken();
+  },
+  updateIsOwner: async function() {
+    var owner = await contractInstance.owner.call();
+    setBadge($("#owner"), owner === window.currentAccount);
+    // Only interact with form if you're an owner
+    makeFormInteractable(owner === window.currentAccount);
+  },
+  eventWatchers: async function() {
+    let tokensGivenEvent = contractInstance.TokensGiven({}, {
+      fromBlock: 0,
+      toBlock: "latest"
+    });
+    setInterval(function() {
+      if (web3.eth.accounts[0] !== currentAccount) {
+        currentAccount = web3.eth.accounts[0];
+        App.updateCurrentAccount();
+      }
+    }, 100);
+    tokensGivenEvent.watch((err, _) => {
+      if (err != null) {
+        console.error("Error waching for tokens given: " + err.message);
+      }
+      App.updateHasToken();
+    })
+  },
   start: async function() {
     Contract.setProvider(web3.currentProvider);
-    console.log("Getting contract...");
-    contractInstance = window.contractInstance = await Contract.deployed();
-    console.log("Got contract.");
-    var currentAccount;
+    window.contractInstance = await Contract.deployed();
 
     web3.eth.getAccounts(async function(err, accounts) {
       if (err != null) {
@@ -42,56 +75,48 @@ window.Interface = {
         alert("You have no Ethereum wallets.");
         return;
       } else {
-        currentAccount = window.currentAccount = accounts[0];
-        $("#currentAccount").text(currentAccount)
-        contractInstance.balances.call(currentAccount).then(res => {
-          setBadge($("#token"), res);
-        });
+        window.currentAccount = accounts[0];
+        App.updateHasToken();
       }
 
     });
 
-    var owner = await contractInstance.owner.call();
-    setBadge($("#owner"), owner === window.currentAccount);
-    // Only interact with form if you're an owner
-    makeFormInteractable(owner === window.currentAccount);
+    App.eventWatchers();
   }
 }
 
 function verifyAddress(address) {
-  // console.log(address);
-  // console.log(address.test(/^0x0{20}$/g));
   return address.match(/^0x[a-zA-Z0-9]{40}$/g) != null;
 }
 
 $("button").click(() => {
-  //TODO: verify input before sending to smart contract
   //TODO: output window
-  var targetAddress = $("input").val();
-  if (!verifyAddress(targetAddress)) {
-    console.log("Invalid address.");
-    return;
+  var targetAddresses = $("textarea").val().split('\n');
+  for (var i = 0; i < targetAddresses.length; i++) {
+    if (!verifyAddress(targetAddresses[i])) {
+      alert("Address " + targetAddresses[i] + " is invalid.");
+      return;
+    }
   }
-
   console.log("Sending transaction...");
-  window.contractInstance.giveToken.estimateGas(targetAddress,
-                                                {
-                                                  from: window.currentAccount,
-                                                  gasPrice: 2000000000
-                                                }).then(_gas => {
-    return window.contractInstance.giveToken(targetAddress,
-                                             {
-                                               from: window.currentAccount,
-                                               gasPrice: 2000000000,
-                                               gas: _gas
-                                             });
+  window.contractInstance.giveTokenBulk.estimateGas(targetAddresses,
+                                                    {
+                                                      from: window.currentAccount,
+                                                      gasPrice: 2000000000
+                                                    }).then(_gas => {
+    return window.contractInstance.giveTokenBulk(targetAddresses,
+                                                 {
+                                                   from: window.currentAccount,
+                                                   gasPrice: 2000000000,
+                                                   gas: _gas
+                                                 });
   }).then(() => {
     console.log("Transaction succesful.")
   }).catch(err => {
-    console.log("Transaction unsuccesful:" + err.message);
+    console.error("Transaction unsuccesful: " + err.message);
   });
 })
 
 $(function() {
-  Interface.start();
+  App.start();
 })
