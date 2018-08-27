@@ -8,6 +8,7 @@ import {
 import $ from "jquery";
 
 var Contract = TruffleContract(contract_artifacts);
+// console.log(Contract.deployed());
 
 function setBadge(badge, state) {
   // Sets a badge depending on the boolean `state`
@@ -77,6 +78,7 @@ window.App = {
       } else {
         window.currentAccount = accounts[0];
         App.updateHasToken();
+        App.updateIsOwner();
       }
 
     });
@@ -118,5 +120,6 @@ $("button").click(() => {
 })
 
 $(function() {
+  makeFormInteractable(false);
   App.start();
 })
