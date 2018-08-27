@@ -64,6 +64,34 @@ window.App = {
       App.updateHasToken();
     })
   },
+  giveTokens: async function() {
+    //TODO: output window
+    console.log("Button clicked");
+    var targetAddresses = $("textarea").val().split('\n');
+    for (var i = 0; i < targetAddresses.length; i++) {
+      if (!verifyAddress(targetAddresses[i])) {
+        alert("Address " + targetAddresses[i] + " is invalid.");
+        return;
+      }
+    }
+    console.log("Sending transaction...");
+    window.contractInstance.giveTokenBulk.estimateGas(targetAddresses,
+                                                      {
+                                                        from: window.currentAccount,
+                                                        gasPrice: 2000000000
+                                                      }).then(_gas => {
+      return window.contractInstance.giveTokenBulk(targetAddresses,
+                                                   {
+                                                     from: window.currentAccount,
+                                                     gasPrice: 2000000000,
+                                                     gas: _gas
+                                                   });
+    }).then(() => {
+      console.log("Transaction succesful.")
+    }).catch(err => {
+      console.error("Transaction unsuccesful: " + err.message);
+    });
+  },
   start: async function() {
     Contract.setProvider(web3.currentProvider);
     window.contractInstance = await Contract.deployed();
@@ -91,33 +119,6 @@ function verifyAddress(address) {
   return address.match(/^0x[a-zA-Z0-9]{40}$/g) != null;
 }
 
-$("button").click(() => {
-  //TODO: output window
-  var targetAddresses = $("textarea").val().split('\n');
-  for (var i = 0; i < targetAddresses.length; i++) {
-    if (!verifyAddress(targetAddresses[i])) {
-      alert("Address " + targetAddresses[i] + " is invalid.");
-      return;
-    }
-  }
-  console.log("Sending transaction...");
-  window.contractInstance.giveTokenBulk.estimateGas(targetAddresses,
-                                                    {
-                                                      from: window.currentAccount,
-                                                      gasPrice: 2000000000
-                                                    }).then(_gas => {
-    return window.contractInstance.giveTokenBulk(targetAddresses,
-                                                 {
-                                                   from: window.currentAccount,
-                                                   gasPrice: 2000000000,
-                                                   gas: _gas
-                                                 });
-  }).then(() => {
-    console.log("Transaction succesful.")
-  }).catch(err => {
-    console.error("Transaction unsuccesful: " + err.message);
-  });
-})
 
 $(function() {
   makeFormInteractable(false);
