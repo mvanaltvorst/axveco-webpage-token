@@ -24,7 +24,7 @@ module.exports = {
       port: 8545,
       network_id: "*" // Match any network id
     },
-    ropsten: {
+    production: {
       provider: function() {
         return new HDWalletProvider(secrets.mnemonic, secrets.infura_endpoint);
       },
