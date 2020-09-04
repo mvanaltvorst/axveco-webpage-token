@@ -31,7 +31,7 @@
     "ethjs-abi": "^0.2.1",
     "file-loader": "^1.1.11",
     "jquery": "^3.3.1",
-    "node-sass": "^4.9.2",
+    "node-sass": "^4.13.1",
     "sass-loader": "^6.0.4",
     "truffle-contract": "^3.0.6",
     "truffle-wallet-provider": "0.0.5",
